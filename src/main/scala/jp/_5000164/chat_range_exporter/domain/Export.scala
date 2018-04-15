@@ -12,7 +12,7 @@ object Export {
         implicit val system: ActorSystem = ActorSystem("slack")
         implicit val ec: ExecutionContextExecutor = system.dispatcher
         val historyChunk = client.getChannelHistory(channelId, Some(latest), Some(oldest))
-        Right(historyChunk.messages.mkString("\n"))
+        Right(historyChunk.messages.reverse.mkString("\n"))
       case Left(error) => Left(error)
     }
   }
