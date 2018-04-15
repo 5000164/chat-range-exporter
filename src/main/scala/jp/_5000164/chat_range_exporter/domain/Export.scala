@@ -13,11 +13,23 @@ object Export {
         implicit val ec: ExecutionContextExecutor = system.dispatcher
         val historyChunk = client.getChannelHistory(channelId, Some(latest), Some(oldest))
         Right(historyChunk.messages.mkString("\n"))
-      case Left(_) => Left("形式が正しくありません")
+      case Left(error) => Left(error)
     }
   }
 
-  def analyze(message: String): Either[Unit, (String, String)] = {
-    Right("1523716078.000064", "1523716133.000114")
+  def analyze(message: String): Either[String, (String, String)] = {
+    message.split(' ') match {
+      case partList if partList.length == 3 =>
+        val oldest = transformTimestamp(getTimestamp(partList(1)))
+        val latest = transformTimestamp(getTimestamp(partList(2)))
+        Right(oldest, latest)
+      case _ => Left("引数の数がおかしいです")
+    }
   }
+
+  private def getTimestamp(url: String): String =
+    url.split('/').last
+
+  private def transformTimestamp(timestamp: String): String =
+    timestamp.slice(1, 11) + "." + timestamp.takeRight(6)
 }
