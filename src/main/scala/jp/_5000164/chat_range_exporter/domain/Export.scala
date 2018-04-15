@@ -20,8 +20,8 @@ object Export {
   def analyze(message: String): Either[String, (String, String)] = {
     message.split(' ') match {
       case partList if partList.length == 3 =>
-        val oldest = transformTimestamp(getTimestamp(partList(1)))
-        val latest = transformTimestamp(getTimestamp(partList(2)))
+        val oldest = transformTimestamp(getTimestamp(partList(1)), true)
+        val latest = transformTimestamp(getTimestamp(partList(2)), false)
         Right(oldest, latest)
       case _ => Left("引数の数がおかしいです")
     }
@@ -30,6 +30,9 @@ object Export {
   private def getTimestamp(url: String): String =
     url.split('/').last
 
-  private def transformTimestamp(timestamp: String): String =
-    timestamp.slice(1, 11) + "." + timestamp.takeRight(6)
+  private def transformTimestamp(timestamp: String, oldestFlag: Boolean): String = {
+    val integerPart = timestamp.slice(1, 11)
+    val fractionalPart = "%06d".format(timestamp.takeRight(6).toInt + (if (oldestFlag) -1 else 1))
+    s"$integerPart.$fractionalPart"
+  }
 }
