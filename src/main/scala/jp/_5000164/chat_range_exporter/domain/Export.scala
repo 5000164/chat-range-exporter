@@ -20,8 +20,8 @@ object Export {
   def analyze(message: String): Either[String, (String, String)] = {
     message.split(' ') match {
       case partList if partList.length == 3 =>
-        val oldest = transformTimestamp(getTimestamp(partList(1)), true)
-        val latest = transformTimestamp(getTimestamp(partList(2)), false)
+        val oldest = transformTimestamp(getTimestamp(partList(1).drop(1).dropRight(1)), true)
+        val latest = transformTimestamp(getTimestamp(partList(2).drop(1).dropRight(1)), false)
         Right(oldest, latest)
       case _ => Left("引数の数がおかしいです")
     }
