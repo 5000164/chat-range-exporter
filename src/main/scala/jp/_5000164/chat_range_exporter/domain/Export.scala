@@ -1,19 +1,15 @@
 package jp._5000164.chat_range_exporter.domain
 
-import akka.actor.ActorSystem
-import slack.api.BlockingSlackApiClient
-
-import scala.concurrent.ExecutionContextExecutor
+import jp._5000164.chat_range_exporter.interfaces.Slack
 
 object Export {
-  def execute(client: BlockingSlackApiClient, channelId: String, message: String): Either[String, String] = {
+  def execute(slack: Slack, channelId: String, message: String): Either[String, String] = {
     analyze(message) match {
       case Right((oldest, latest)) =>
-        implicit val system: ActorSystem = ActorSystem("slack")
-        implicit val ec: ExecutionContextExecutor = system.dispatcher
-        val historyChunk = client.getChannelHistory(channelId, Some(latest), Some(oldest))
-        Right(historyChunk.messages.reverse.mkString("\n"))
-      case Left(error) => Left(error)
+        val messages = slack.fetchMessages(channelId, latest, oldest)
+        Right(messages.reverse.mkString("\n"))
+      case Left(error) =>
+        Left(error)
     }
   }
 
