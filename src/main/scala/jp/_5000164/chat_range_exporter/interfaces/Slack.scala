@@ -1,6 +1,7 @@
 package jp._5000164.chat_range_exporter.interfaces
 
 import akka.actor.ActorSystem
+import play.api.libs.json.JsValue
 import slack.api.BlockingSlackApiClient
 import slack.rtm.SlackRtmClient
 
@@ -16,4 +17,10 @@ class Slack(val token: String) {
   def start(operator: Operator): Unit = {
     rtmClient.onMessage(message => operator.run(message))
   }
+
+  def post(channel: String, text: String): Unit =
+    rtmClient.sendMessage(channel, text)
+
+  def fetchMessages(channelId: String, latest: String, oldest: String): Seq[JsValue] =
+    apiClient.getChannelHistory(channelId, Some(latest), Some(oldest)).messages
 }
