@@ -1,13 +1,14 @@
 package jp._5000164.chat_range_exporter.domain
 
 import jp._5000164.chat_range_exporter.interfaces.Slack
+import play.api.libs.json.JsValue
 
 object Export {
   def execute(slack: Slack, channelId: String, message: String): Either[String, String] = {
     analyze(message) match {
       case Right((oldest, latest)) =>
         val messages = slack.fetchMessages(channelId, latest, oldest)
-        Right(messages.reverse.mkString("\n"))
+        Right(transform(messages))
       case Left(error) =>
         Left(error)
     }
@@ -31,4 +32,10 @@ object Export {
     val fractionalPart = "%06d".format(timestamp.takeRight(6).toInt + (if (oldestFlag) -1 else 1))
     s"$integerPart.$fractionalPart"
   }
+
+  def transform(messages: Seq[JsValue]): String =
+    messages.map(filter).reverse.mkString("\n")
+
+  private def filter(message: JsValue): String =
+    s"${(message \ "ts").as[String]} ${(message \ "user").as[String]} ${(message \ "text").as[String]}"
 }
