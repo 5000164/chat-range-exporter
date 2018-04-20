@@ -23,4 +23,7 @@ class Slack(val token: String) {
 
   def fetchMessages(channelId: String, latest: String, oldest: String): Seq[JsValue] =
     apiClient.getChannelHistory(channelId, Some(latest), Some(oldest)).messages
+
+  def fetchReplies(channelId: String, timestamp: String): Seq[JsValue] =
+    apiClient.getChannelReplies(channelId, timestamp).messages
 }
