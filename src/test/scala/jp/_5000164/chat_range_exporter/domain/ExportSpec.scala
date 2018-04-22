@@ -6,12 +6,12 @@ import play.api.libs.json.Json
 class ExportSpec extends FreeSpec {
   "チャットメッセージの引数が 1 つの場合にタイムスタンプの範囲を取り出せる" in {
     val message = "<@AAAAAAAAA> <https://my.slack.com/archives/AAAAAAAAA/p0000000000000001>"
-    assert(Export.analyze(message) == Right("0000000000.000000", "0000000000.000002", true))
+    assert(Export.analyze(message) == Right("0000000000.000000", "0000000000.000002", Threads))
   }
 
   "チャットメッセージの引数が 2 つの場合にタイムスタンプの範囲を取り出せる" in {
     val message = "<@AAAAAAAAA> <https://my.slack.com/archives/AAAAAAAAA/p0000000000000001> <https://my.slack.com/archives/AAAAAAAAA/p0000000000000002>"
-    assert(Export.analyze(message) == Right("0000000000.000000", "0000000000.000003", false))
+    assert(Export.analyze(message) == Right("0000000000.000000", "0000000000.000003", Messages))
   }
 
   "Slack のメッセージをエクスポート用に整形する" in {
