@@ -6,11 +6,11 @@ import play.api.libs.json.JsValue
 object Export {
   def execute(slack: Slack, channelId: String, message: String): Either[String, String] = {
     analyze(message) match {
-      case Right((oldest, latest, true)) =>
+      case Right((oldest, latest, Threads)) =>
         val messages = slack.fetchMessages(channelId, latest, oldest)
         val replies = slack.fetchReplies(channelId, (messages.head \ "thread_ts").as[String])
         Right(transform(replies))
-      case Right((oldest, latest, false)) =>
+      case Right((oldest, latest, Messages)) =>
         val messages = slack.fetchMessages(channelId, latest, oldest)
         Right(transform(messages.reverse))
       case Left(error) =>
@@ -18,16 +18,16 @@ object Export {
     }
   }
 
-  def analyze(message: String): Either[String, (String, String, Boolean)] = {
+  def analyze(message: String): Either[String, (String, String, Range)] = {
     message.split(' ') match {
       case partList if partList.length == 2 =>
         val oldest = transformTimestamp(getTimestamp(partList(1).drop(1).dropRight(1)), oldestFlag = true)
         val latest = transformTimestamp(getTimestamp(partList(1).drop(1).dropRight(1)), oldestFlag = false)
-        Right((oldest, latest, true))
+        Right((oldest, latest, Threads))
       case partList if partList.length == 3 =>
         val oldest = transformTimestamp(getTimestamp(partList(1).drop(1).dropRight(1)), oldestFlag = true)
         val latest = transformTimestamp(getTimestamp(partList(2).drop(1).dropRight(1)), oldestFlag = false)
-        Right((oldest, latest, false))
+        Right((oldest, latest, Messages))
       case _ => Left("引数の数がおかしいです")
     }
   }
@@ -47,3 +47,9 @@ object Export {
   private def filter(message: JsValue): String =
     s"${(message \ "ts").as[String]} ${(message \ "user").as[String]} ${(message \ "text").as[String]}"
 }
+
+sealed trait Range
+
+case object Messages extends Range
+
+case object Threads extends Range
