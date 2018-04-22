@@ -1,15 +1,8 @@
 package jp._5000164.chat_range_exporter.interfaces
 
-import akka.actor.ActorSystem
-import slack.rtm.SlackRtmClient
-
-import scala.concurrent.ExecutionContextExecutor
-
 object Application extends App {
-  implicit val system: ActorSystem = ActorSystem("slack")
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
-  val token = sys.env("SLACK_TOKEN")
-  val client = SlackRtmClient(token)
-  val botId = client.state.self.id
-  client.onMessage(message => println(message))
+  val slack = new Slack(sys.env("SLACK_TOKEN"))
+  val backlog = new Backlog(sys.env("BACKLOG_SPACE_ID"), sys.env("BACKLOG_API_KEY"), sys.env("BACKLOG_WIKI_ID"))
+  val operator = new Operator(slack, backlog)
+  slack.start(operator)
 }
